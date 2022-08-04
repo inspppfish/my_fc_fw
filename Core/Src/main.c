@@ -68,7 +68,7 @@ void debug_output_entry(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+fp32 accel[3], gyro[3], temp;
 /* USER CODE END 0 */
 
 /**
@@ -128,7 +128,7 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of bmi088process */
-  osThreadDef(bmi088process, bmi088process_entry, osPriorityNormal, 0, 128);
+  osThreadDef(bmi088process, bmi088process_entry, osPriorityNormal, 0, 1024);
   bmi088processHandle = osThreadCreate(osThread(bmi088process), NULL);
 
   /* definition and creation of debug_output */
@@ -313,13 +313,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_G_Pin */
   GPIO_InitStruct.Pin = LED_G_Pin;
@@ -327,6 +333,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_G_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : CS1_ACCEL_Pin */
+  GPIO_InitStruct.Pin = CS1_ACCEL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(CS1_ACCEL_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : CS1_GYRO_Pin */
+  GPIO_InitStruct.Pin = CS1_GYRO_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(CS1_GYRO_GPIO_Port, &GPIO_InitStruct);
 
 }
 
@@ -362,10 +382,13 @@ void StartDefaultTask(void const * argument)
 void bmi088process_entry(void const * argument)
 {
   /* USER CODE BEGIN bmi088process_entry */
+  BMI088_init();
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    BMI088_read(accel, gyro, &temp);
+	printf("/*%f,%f,%f*/\r\n", accel[0], accel[1], accel[2]);
+    osDelay(50);
   }
   /* USER CODE END bmi088process_entry */
 }
@@ -383,6 +406,7 @@ void debug_output_entry(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+
     osDelay(1);
   }
   /* USER CODE END debug_output_entry */

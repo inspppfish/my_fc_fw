@@ -1,5 +1,5 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja -S /Users/insppp/Mysource/my_fc_fw -B /Users/insppp/Mysource/my_fc_fw/cmake-build-debug
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja -S /Users/insppp/Mysource/fc/my_fc_fw -B /Users/insppp/Mysource/fc/my_fc_fw/cmake-build-debug
 -- Minimal optimization, debug info included
 -- Configuring done
 -- Generating done
--- Build files have been written to: /Users/insppp/Mysource/my_fc_fw/cmake-build-debug
+-- Build files have been written to: /Users/insppp/Mysource/fc/my_fc_fw/cmake-build-debug
