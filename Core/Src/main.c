@@ -382,11 +382,11 @@ void StartDefaultTask(void const * argument)
 void bmi088process_entry(void const * argument)
 {
   /* USER CODE BEGIN bmi088process_entry */
-  BMI088_init();
+  while (BMI088_init()) {};
   /* Infinite loop */
   for(;;)
   {
-    BMI088_read(accel, gyro, &temp);
+    BMI088_read(gyro, accel, &temp);
 	printf("/*%f,%f,%f*/\r\n", accel[0], accel[1], accel[2]);
     osDelay(50);
   }
