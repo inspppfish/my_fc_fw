@@ -43,7 +43,9 @@
 SPI_HandleTypeDef hspi1;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
+DMA_HandleTypeDef hdma_usart3_rx;
 
 osThreadId defaultTaskHandle;
 osThreadId bmi088processHandle;
@@ -55,9 +57,11 @@ osThreadId debug_outputHandle;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void const * argument);
 void bmi088process_entry(void const * argument);
 void debug_output_entry(void const * argument);
@@ -68,7 +72,7 @@ void debug_output_entry(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-fp32 accel[3], gyro[3], temp;
+
 /* USER CODE END 0 */
 
 /**
@@ -99,9 +103,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -132,7 +138,7 @@ int main(void)
   bmi088processHandle = osThreadCreate(osThread(bmi088process), NULL);
 
   /* definition and creation of debug_output */
-  osThreadDef(debug_output, debug_output_entry, osPriorityBelowNormal, 0, 128);
+  osThreadDef(debug_output, debug_output_entry, osPriorityBelowNormal, 0, 1024);
   debug_outputHandle = osThreadCreate(osThread(debug_output), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -271,6 +277,39 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 100000;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_2;
+  huart3.Init.Parity = UART_PARITY_EVEN;
+  huart3.Init.Mode = UART_MODE_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief USART6 Initialization Function
   * @param None
   * @retval None
@@ -304,6 +343,22 @@ static void MX_USART6_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -316,6 +371,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -379,16 +435,14 @@ void StartDefaultTask(void const * argument)
 * @retval None
 */
 /* USER CODE END Header_bmi088process_entry */
-void bmi088process_entry(void const * argument)
+__weak void bmi088process_entry(void const * argument)
 {
   /* USER CODE BEGIN bmi088process_entry */
-  while (BMI088_init()) {};
   /* Infinite loop */
   for(;;)
   {
-    BMI088_read(gyro, accel, &temp);
-	printf("/*%f,%f,%f*/\r\n", accel[0], accel[1], accel[2]);
-    osDelay(50);
+	  //non loop
+	  osDelay(100);
   }
   /* USER CODE END bmi088process_entry */
 }
@@ -400,7 +454,7 @@ void bmi088process_entry(void const * argument)
 * @retval None
 */
 /* USER CODE END Header_debug_output_entry */
-void debug_output_entry(void const * argument)
+__weak void debug_output_entry(void const * argument)
 {
   /* USER CODE BEGIN debug_output_entry */
   /* Infinite loop */
